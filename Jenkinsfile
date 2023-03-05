@@ -3,7 +3,8 @@ pipeline {
   agent {
 
   docker {
-      image 'pwrppll/build-container'
+      image 'pwrppill/build-container'
+      args '--privileged -v /var/run/docker.sock:/var/run/docker.sock -v /root:/root -u root'
     }
     
   }
@@ -12,13 +13,12 @@ pipeline {
 
     stage('Copy project') {
       steps {
-        git branch: 'jetty-10.0.x', url: 'https://github.com/jetty-project/embedded-jetty-live-war.git'
+        git branch: 'main', url: 'https://github.com/pwrppill/build-container.git'
       }
     }
 
     stage('Build war') {
       steps {
-       sh 'cd ./embedded-jetty-live-war' 
        sh 'mvn package'
       }
     }
@@ -37,8 +37,17 @@ pipeline {
     
     stage('push docker image to registry') {
       steps {
-        sh 'docker login -u -p && docker push devcvs-srv01:5000/shop2-backend/gateway-api:2-staging'
+        sh 'docker push pwrppill/embedded-jetty-live-war'
       }
-    }  
+    }
+    
+    stage('Pull & deploy app') {
+        steps {
+            sh 'ssh-keyscan -H 158.160.22.106 >> ~/.ssh/known_hosts'
+            sh 'ssh root@158.160.22.106 << EOF'
+            sh 'docker pull pwrppill/embedded-jetty-live-war'
+            sh 'docker run -p 8081:8080 -d pwrppill/embedded-jetty-live-war'
+        }
+    }
   }
 }
