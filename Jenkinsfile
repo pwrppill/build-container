@@ -43,10 +43,10 @@ pipeline {
     
     stage('Pull & deploy app') {
         steps {
-            sh 'ssh-keyscan -H 158.160.28.155 >> ~/.ssh/known_hosts'
-            sh 'ssh root@158.160.28.155 << EOF'
-            sh 'docker pull pwrppill/embedded-jetty-live-war'
-            sh 'docker run -p 8181:8080 -d pwrppill/embedded-jetty-live-war'
+            sh '''ssh root@158.160.28.155 << EOF
+            docker pull pwrppill/embedded-jetty-live-war
+            docker run -p 8383:8080 -d pwrppill/embedded-jetty-live-war
+EOF'''
         }
     }
   }
